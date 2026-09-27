@@ -1,3 +1,11 @@
+"""
+Rcon Module - Abstraction layer which drives and constrains mcrcon, an executable
+    which implements MC's RCON protocol
+
+Kenneth Lopez 2026 lopezk38@gmail.com
+
+"""
+
 import json
 import random
 import subprocess
@@ -10,7 +18,24 @@ from ipaddress import ip_address
 from enum import Enum
 from pathlib import Path
 
+"""
+Dataclass to carry and validate connection parameters for the RconDriver class
+
+"""
 class RconConfig:
+
+    """
+    RconConfig Constructor - Accepts and validates connection parameters
+
+    Args:
+        serverRconIP: str - IP address to the MC server to make a connection to
+        serverRconPort: int - RCON Port to the MC server
+        serverRconPW: str - MC server's RCON password. Pass empty string for no PW (inadvisable)
+    
+    Raises:
+        ValueError - If any of the given parameters are None or fail validation
+
+    """
     def __init__(self, serverRconIP: str, serverRconPort: int, serverRconPW: str):
         if serverRconIP is None:
             raise ValueError("Given RCON IP is None")
@@ -40,13 +65,16 @@ class RconConfig:
             print(f"Bad password for RCON given")
             raise ValueError("Bad RCON PW")
 
-        self.serverRconIP = serverRconIP
+        self.serverRconIP = serverRconIP if serverRconIP.lower() != 'localhost' else '0.0.0.0'
         self.serverRconPort = serverRconPort
         self.serverRconPW = serverRconPW
 
         self.rconDep = Path(__file__).resolve().parent.parent.parent / 'deps' / 'mcrcon'
 
+"""
+RconDriver - Implements an interface for calling mcrcon safely
 
+"""
 class RconDriver:
     class ErrCode(Enum):
         SUCCESS = 0
@@ -54,13 +82,43 @@ class RconDriver:
         ALREADY_EXISTS = 2
         UNKNOWN = -1
 
+    """
+    RconDriver default constructor - Loads parameters stored in environment vars or a config file
+        If both valid environment vars and a config file are present, the environment vars will be used
+
+        The following environment vars should be used if not using a config file:
+            MC_RCON_ADDR
+            MC_RCON_PORT
+            MC_RCON_PW
+
+        Config file should be located in the config/rcon_config.json file if desired.
+        Config file should have the following keys in any order:
+            rconIP (string)
+            rconPort (integer)
+            rconPW (string)
+
+    """
     def __init__(self):
         self._config = self._loadSettings()
 
+    """
+    RconDriver secondary constructor - Loads the specified parameter dataclass instead of using
+        environment vars or config files
+
+        Parameters are copied from the given dataclass, allowing reuse of dataclasses for instantiating
+            more RconDrivers
+
+    """
     def __init__(self, rconConfig: RconConfig):
         self._config = copy.deepcopy(rconConfig)
 
 
+    """
+    checkUpCmd - Checks if the MC server is reachable or shut down
+
+    Returns Boolean, True if up and False if down
+
+    """
     def checkUpCmd(self):
         #Call version and see if we get a response
         try:
@@ -77,6 +135,15 @@ class RconDriver:
         #If we got here, server is up
         return True
 
+    """
+    listCmd - Requests the names of online players on the MC server
+
+    Returns a list<str> containing all online player names. Empty list if no players are on
+
+    Raises:
+        RuntimeError if the server is unreachable or if it returns a bad/unparsable response
+
+    """
     def listCmd(self):
         #Call list
         output = None
@@ -115,6 +182,26 @@ class RconDriver:
 
         return playerList;
         
+    """
+    whitelistAddCmd - Validates and adds the given account name to the server whitelist
+
+    Args:
+        playerName: str - The name of the account to add to the whitelist
+            Must be between 3 and 16 characters long
+            Must contain only chars which are allowed for a valid account name
+
+    Returns RconDriver.ErrCode enum value specifying the result
+        ErrCode.SUCCESS if succeeded
+        ErrCode.ALREADY_EXISTS if the account is already on the whitelist
+        ErrCode.BAD_NAME if the given name failed validation or is not a real account name
+        ErrCode.UNKNOWN if the server's response could not be parsed. New whitelist state
+            becomes unknown
+
+    Raises:
+        ValueError if the given player name failed validation
+        RuntimeError if the server could not be reached or gives a bad response
+
+    """
     def whitelistAddCmd(self, playerName: str):  
         if (len(playerName) < 3):
             #Name is too short
@@ -179,33 +266,75 @@ class RconDriver:
         
         assert False, 'Whitelist add command reached impossible instruction, halting'
         
+    """
+    seedCmd - Returns the server's seed value
+        Currently is a hardcoded value
+
+    Returns str containing the seed
+
+    """
     def seedCmd(self):
         return "2055796538" #TODO fetch from server instead of hardcoding
             
+    """
+    ipCmd - Returns the IP address for the MC server
+        If MC server is running on the same machine as this program (aka if RCON IP is 0.0.0.0/localhost)
+            the machine's external IP will be queried using Akamai's IP service
+            Otherwise, it just returns the RCON IP hoping it's an external IP since we don't have
+                code execution on the MC server machine to query it's external IP
+
+    Returns str containing the IP address for the MC server (see above note)
+
+    Raises:
+        RuntimeError if Akamai could not be reached
+        ValueError if Akamai could be reached but gave an invalid response
+
+    """
     def ipCmd(self):
-        #Get IP from akamai
-        resp = None
-        try:
-            resp = requests.get("http://whatismyip.akamai.com")
-            if (resp is None): raise ValueError("Got invalid response from Akamai")
+        if self._config.serverRconIP == '0.0.0.0':
+            # Server is on the same machine, need to get external IP
+            # Get IP from akamai
+            resp = None
+            try:
+                resp = requests.get("http://whatismyip.akamai.com")
+                if (resp is None): raise ValueError("Got invalid response from Akamai")
 
-        except:
-            raise RuntimeError("Could not reach Akamai")
-        
-        #Validate response
-        ipRaw = resp.text[:15]
-        match = re.match('^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}.\\d{1,3}$', ipRaw)
-        
-        if (match is None):
-            print("WARNING: Got invalid IP from Akamai: " + ipRaw)
-            raise ValueError("Got invalid response from Akamai")
-        
-        #IP validated, send it
-        print("Got external IP from Akamai: " + match.group(0))
-        
-        return match.group(0) # str containing IP
+            except:
+                raise RuntimeError("Could not reach Akamai")
+            
+            #Validate response
+            ipRaw = resp.text[:15]
+            match = re.match('^\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}.\\d{1,3}$', ipRaw)
+            
+            if (match is None):
+                print("WARNING: Got invalid IP from Akamai: " + ipRaw)
+                raise ValueError("Got invalid response from Akamai")
+            
+            #IP validated, send it
+            print("Got external IP from Akamai: " + match.group(0))
+            
+            return match.group(0) # str containing IP
+
+        else:
+            # Server is on an external machine, best we can do is return the RCON IP
+            return self._config.serverRconIP;
         
 
+    """
+    _loadSettings - Private function which is used to load environment variables or config file values
+        You should never need to call this
+
+    Args:
+        path: Path - Path to look for the config file. Optional parameter
+            By default, looks for a config file at config/rcon_config.json
+
+    Raises:
+        FileNotFoundError if no environment vars could be found and a config file also could not be found
+        ValueError if config file is missing keys or contains invalid values
+            If you get this while you were trying to use environment variables, they also could either
+            not be found or failed validation
+
+    """
     def _loadSettings(self, path: Path = None):
         #Attempt to retrieve from env vars
         try:
