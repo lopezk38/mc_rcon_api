@@ -13,6 +13,7 @@ import re
 import requests
 import copy
 import os
+import socket
 
 from ipaddress import ip_address
 from enum import Enum
@@ -347,7 +348,16 @@ class RconDriver:
     def _loadSettings(self, path: Path = None):
         #Attempt to retrieve from env vars
         try:
-            settingsObj = RconConfig(os.getenv("MC_RCON_ADDR", None), int(os.getenv("MC_RCON_PORT", None)), os.getenv("MC_RCON_PW", None))
+            #Special case for WSL Docker support
+            envIP = os.getenv("MC_RCON_ADDR", None)
+            if (envIP == '172.17.0.1'):
+                try:
+                    envIP = str(socket.gethostbyname('host.docker.internal'))
+
+                except socket.gaierror:
+                    pass
+
+            settingsObj = RconConfig(envIP, int(os.getenv("MC_RCON_PORT", None)), os.getenv("MC_RCON_PW", None))
 
         except (ValueError, KeyError):
             print("RCON env vars not present or invalid, looking for config json...")
