@@ -1,5 +1,7 @@
 from src.rcon.rcon import RconConfig, RconDriver
 
+import traceback
+
 def rconTest():
     print("Loading RCON driver...")
 
@@ -9,6 +11,7 @@ def rconTest():
 
     except Exception as e:
         print(f"Failed to load RCON driver due to exception: {e}")
+        print(traceback.print_exception(e))
         quit()
 
     print("Loaded driver successfully\n")
@@ -20,6 +23,7 @@ def rconTest():
 
     except Exception as e:
         print(f"Caught exception: {e}")
+        print(traceback.print_exception(e))
 
     print("\nTesting listCmd")
     try:
@@ -28,14 +32,16 @@ def rconTest():
 
     except Exception as e:
         print(f"Caught exception: {e}")
+        print(traceback.print_exception(e))
 
     print("\nTesting whitelistAddCmd")
     try:
-        wlOut = rconDriver.whitelistAddCmd()
+        wlOut = rconDriver.whitelistAddCmd("test")
         print(f"Got response: {wlOut}")
 
     except Exception as e:
         print(f"Caught exception: {e}")
+        print(traceback.print_exception(e))
 
     print("\nTesting seedCmd")
     try:
@@ -44,6 +50,7 @@ def rconTest():
 
     except Exception as e:
         print(f"Caught exception: {e}")
+        print(traceback.print_exception(e))
 
     print("\nTesting ipCmd")
     try:
@@ -52,6 +59,7 @@ def rconTest():
 
     except Exception as e:
         print(f"Caught exception: {e}")
+        print(traceback.print_exception(e))
 
     print("\n\nTests completed")
 
