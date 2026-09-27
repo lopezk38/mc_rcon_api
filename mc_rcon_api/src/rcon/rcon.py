@@ -50,8 +50,12 @@ class RconConfig:
             ip_address(serverRconIP)
 
         except ValueError:
-            print(f"Bad IP address for RCON given: {serverRconIP}")
-            raise ValueError("Bad RCON IP")
+            if serverRconIP.lower().replace(' ', '') == 'localhost':
+                serverRconIP = '0.0.0.0'
+
+            else:
+                print(f"Bad IP address for RCON given: {serverRconIP}")
+                raise ValueError("Bad RCON IP")
 
         if type(serverRconPort) is not int:
             print("Given RCON port is not an integer")
@@ -65,7 +69,7 @@ class RconConfig:
             print(f"Bad password for RCON given")
             raise ValueError("Bad RCON PW")
 
-        self.serverRconIP = serverRconIP if serverRconIP.lower() != 'localhost' else '0.0.0.0'
+        self.serverRconIP = serverRconIP
         self.serverRconPort = serverRconPort
         self.serverRconPW = serverRconPW
 
@@ -73,6 +77,13 @@ class RconConfig:
 
 """
 RconDriver - Implements an interface for calling mcrcon safely
+
+    Available commands:
+        checkUpCmd - Checks if MC server is reachable
+        listCmd - Queries MC server for players online
+        whitelistAddCmd - Adds the given player to the MC server's whitelist
+        seedCmd - Queries the MC server for it's world seed
+        ipCmd - Returns the MC server's external IP (usually)
 
 """
 class RconDriver:
@@ -83,8 +94,9 @@ class RconDriver:
         UNKNOWN = -1
 
     """
-    RconDriver default constructor - Loads parameters stored in environment vars or a config file
-        If both valid environment vars and a config file are present, the environment vars will be used
+    RconDriver constructor - Loads given parameters or those stored in environment vars or a config file
+        If rconConfig parameter is used, those parameters will be used. Otherwise, if both valid environment
+        vars and a config file are present, the environment vars will be used
 
         The following environment vars should be used if not using a config file:
             MC_RCON_ADDR
@@ -97,20 +109,16 @@ class RconDriver:
             rconPort (integer)
             rconPW (string)
 
-    """
-    def __init__(self):
-        self._config = self._loadSettings()
+    Args:
+        rconConfig: RconConfig (Optional) - Config to use, overriding env vars or config files
 
     """
-    RconDriver secondary constructor - Loads the specified parameter dataclass instead of using
-        environment vars or config files
-
-        Parameters are copied from the given dataclass, allowing reuse of dataclasses for instantiating
-            more RconDrivers
-
-    """
-    def __init__(self, rconConfig: RconConfig):
-        self._config = copy.deepcopy(rconConfig)
+    def __init__(self, rconConfig: RconConfig = None):
+        if rconConfig is None:
+            self._config = self._loadSettings()
+            
+        else:
+            self._config = copy.deepcopy(rconConfig)
 
 
     """
@@ -198,18 +206,17 @@ class RconDriver:
             becomes unknown
 
     Raises:
-        ValueError if the given player name failed validation
         RuntimeError if the server could not be reached or gives a bad response
 
     """
     def whitelistAddCmd(self, playerName: str):  
         if (len(playerName) < 3):
             #Name is too short
-            raise ValueError("Name is too short")
+            return self.ErrCode.BAD_NAME
         
         if (len(playerName) > 16):
             #Name is too long
-            raise ValueError("Name is too long")
+            return self.ErrCode.BAD_NAME
         
         #Sanitize name
         matches = re.findall('([A-z]|\\d|_)', playerName[0:16])
@@ -218,7 +225,7 @@ class RconDriver:
         
         if (len(name) != len(playerName)):
             #Name had bad chars in it. Reject
-            raise ValueError("Rejected name")
+            return self.ErrCode.BAD_NAME
         
         #Run whitelist add
         output = None
@@ -345,7 +352,7 @@ class RconDriver:
 
         #Load JSON file
         if path is None:
-            path = Path(__file__).resolve().parent.parent / 'config' / 'rcon_config.json'
+            path = Path(__file__).resolve().parent.parent.parent / 'config' / 'rcon_config.json'
 
         try:
             file = open(path)

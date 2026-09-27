@@ -1,5 +1,5 @@
 [project]
-name = "mc-server-rcon-api"
+name = "mc_rcon_api"
 version = "0.1.0"
 description = "API to provide safe and restricted RCON access to internal MC servers"
 authors = [
@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "requests",
+    "fastapi[standard] (>=0.141.1,<0.142.0)",
 ]
 
 
@@ -19,3 +20,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.scripts]
+start = "mc_rcon_api.src.server:start"
