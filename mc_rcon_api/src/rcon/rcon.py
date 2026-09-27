@@ -347,7 +347,7 @@ class RconDriver:
     def _loadSettings(self, path: Path = None):
         #Attempt to retrieve from env vars
         try:
-            settingsObj = RconConfig(os.getenv("MC_RCON_ADDR", None), os.getenv("MC_RCON_PORT", None), os.getenv("MC_RCON_PW", None))
+            settingsObj = RconConfig(os.getenv("MC_RCON_ADDR", None), int(os.getenv("MC_RCON_PORT", None)), os.getenv("MC_RCON_PW", None))
 
         except (ValueError, KeyError):
             print("RCON env vars not present or invalid, looking for config json...")
