@@ -158,24 +158,24 @@ class RconDriver:
         match = re.match("Added .* to the whitelist", respStr)
         if (match is not None):
             #Success
-            return self.ErrCodes.SUCCESS
+            return self.ErrCode.SUCCESS
             
         else:
             match = re.match("Player is already whitelisted", respStr)
             if (match is not None):
                 #Already whitelisted
-                return self.ErrCodes.ALREADY_EXISTS
+                return self.ErrCode.ALREADY_EXISTS
                 
             else:
                 match = re.match("That player does not exist", respStr)
                 if (match is not None):
                     #Invalid name
-                    return self.ErrCodes.BAD_NAME
+                    return self.ErrCode.BAD_NAME
                     
                 else:
                     #Unknown response from server. New state is indeterminable, may or not have succeeded
                     print(f"WARNING: Got unrecognized whitelist response from server: {respStr}")
-                    return self.ErrCodes.UNKNOWN
+                    return self.ErrCode.UNKNOWN
         
         assert False, 'Whitelist add command reached impossible instruction, halting'
         
