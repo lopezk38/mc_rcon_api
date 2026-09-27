@@ -358,6 +358,7 @@ class RconDriver:
                     pass
 
             settingsObj = RconConfig(envIP, int(os.getenv("MC_RCON_PORT", None)), os.getenv("MC_RCON_PW", None))
+            return settingsObj
 
         except (ValueError, KeyError):
             print("RCON env vars not present or invalid, looking for config json...")
