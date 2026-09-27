@@ -3,7 +3,7 @@ services:
     build: .
     image: mc-rcon-api:0.1.0
     extra_hosts:
-      - "host.docket.internal:host-gateway"
+      - "host.docker.internal:host-gateway"
 
     ports:
       - "8000:8000"
