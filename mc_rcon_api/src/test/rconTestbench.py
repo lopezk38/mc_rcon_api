@@ -1,3 +1,11 @@
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+RCON Testbench - Testing script for RCON driver modules
+    Hits every available command several times over a few seconds to test caching behavior
+
+Kenneth Lopez 2026 lopezk38@gmail.com
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
+
 from mc_rcon_api.src.rcon.rcon import RconConfig, RconDriver
 from mc_rcon_api.src.rcon.cachedRcon import CachedRconDriver
 

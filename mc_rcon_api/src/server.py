@@ -1,3 +1,10 @@
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+MC RCON API Server - FastAPI server exposing MC RCON command subset to the network
+
+Kenneth Lopez 2026 lopezk38@gmail.com
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
+
 from mc_rcon_api.src.rcon.cachedRcon import CachedRconDriver
 
 import traceback
@@ -8,6 +15,11 @@ from fastapi import FastAPI, HTTPException
 rconDriver = CachedRconDriver()
 app = FastAPI()
 
+
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+API Endpoints
+
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
 
 @app.get("/api/mcrcon/status")
 async def getServerStatus():
@@ -70,6 +82,10 @@ async def getServerIP():
         raise HTTPException(status_code=500, detail="Admin check server console for details")
 
 
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
+Start script
 
-def start():
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
+
+def start(): # 'poetry run start' calls this when ran from the project root
     uvicorn.run("mc_rcon_api.src.server:app", host='0.0.0.0', port=8000, reload=True)

@@ -1,10 +1,10 @@
-"""
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Rcon Module - Abstraction layer which drives and constrains mcrcon, an executable
     which implements MC's RCON protocol
 
 Kenneth Lopez 2026 lopezk38@gmail.com
 
-"""
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
 
 import json
 import random
@@ -18,10 +18,11 @@ from ipaddress import ip_address
 from enum import Enum
 from pathlib import Path
 
-"""
+
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 Dataclass to carry and validate connection parameters for the RconDriver class
 
-"""
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
 class RconConfig:
 
     """
@@ -75,7 +76,8 @@ class RconConfig:
 
         self.rconDep = Path(__file__).resolve().parent.parent.parent / 'deps' / 'mcrcon'
 
-"""
+
+"""'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
 RconDriver - Implements an interface for calling mcrcon safely
 
     Available commands:
@@ -85,7 +87,7 @@ RconDriver - Implements an interface for calling mcrcon safely
         seedCmd - Queries the MC server for it's world seed
         ipCmd - Returns the MC server's external IP (usually)
 
-"""
+'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''"""
 class RconDriver:
     class ErrCode(Enum):
         SUCCESS = 0
