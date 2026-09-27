@@ -64,9 +64,9 @@ class RconDriver:
         #Call version and see if we get a response
         try:
             output = subprocess.run([self._config.rconDep, 
-                                        "-H", self._config.serverRconIP,
-                                        "-P", self._config.serverRconPort,
-                                        "-p", self._config.serverRconPW, "version"], 
+                                        "-H", str(self._config.serverRconIP),
+                                        "-P", str(self._config.serverRconPort),
+                                        "-p", str(self._config.serverRconPW), "version"], 
                                         check=True, capture_output=True, text=True)
             
         except subprocess.CalledProcessError as e:
@@ -81,9 +81,9 @@ class RconDriver:
         output = None
         try:
             output = subprocess.run([self._config.rconDep,
-                                        "-H", self._config.serverRconIP,
-                                        "-P", self._config.serverRconPort, "-p",
-                                        self._config.serverRconPW, "list"],
+                                        "-H", str(self._config.serverRconIP),
+                                        "-P", str(self._config.serverRconPort),
+                                        "-p", str(self._config.serverRconPW), "list"],
                                         check=True, capture_output=True, text=True)
             
         except subprocess.CalledProcessError as e:
@@ -136,9 +136,9 @@ class RconDriver:
         output = None
         try:
             output = subprocess.run([self._config.rconDep,
-                                        "-H", self._config.serverRconIP,
-                                        "-P", self._config.serverRconPort,
-                                        "-p", self._config.serverRconPW,
+                                        "-H", str(self._config.serverRconIP),
+                                        "-P", str(self._config.serverRconPort),
+                                        "-p", str(self._config.serverRconPW),
                                         (f"whitelist add {name}")],
                                         check=True, capture_output=True, text=True)
             
