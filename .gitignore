@@ -1,6 +1,5 @@
 config/rcon_config.json
 deps/*
-poetry.lock
 
 **/__pycache__/
 *.py[cod]

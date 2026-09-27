@@ -1,0 +1,14 @@
+services:
+  mc-rcon-api:
+    build: .
+    image: mc-rcon-api:0.1.0
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+    ports:
+      - "8000:8000"
+
+    environment:
+      - MC_RCON_ADDR=172.17.0.1
+      - MC_RCON_PORT=25575
+      - MC_RCON_PW=test
