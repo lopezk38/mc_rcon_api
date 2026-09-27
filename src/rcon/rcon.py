@@ -129,7 +129,7 @@ class RconDriver:
         name = ''.join(matches)
         print("Sanitized name for whitelist: " + name)
         
-        if (len(name) != len(rawName)):
+        if (len(name) != len(playerName)):
             #Name had bad chars in it. Reject
             raise ValueError("Rejected name")
         
