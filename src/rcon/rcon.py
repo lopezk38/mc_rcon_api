@@ -8,6 +8,7 @@ import os
 
 from ipaddress import ip_address
 from enum import Enum
+from pathlib import Path
 
 class RconConfig:
     def __init__(self, serverRconIP: str, serverRconPort: int, serverRconPW: str):
@@ -43,7 +44,7 @@ class RconConfig:
         self.serverRconPort = serverRconPort
         self.serverRconPW = serverRconPW
 
-        self.rconDep = '../../deps/mcrcon'
+        self.rconDep = Path(__file__).resolve().parent.parent.parent / 'deps' / 'mcrcon'
 
 
 class RconDriver:
@@ -205,7 +206,7 @@ class RconDriver:
         return match.group(0) # str containing IP
         
 
-    def _loadSettings(self, pathStr: str = '../../config/rcon_config.json'):
+    def _loadSettings(self, path: Path = None):
         #Attempt to retrieve from env vars
         try:
             settingsObj = RconConfig(os.getenv("MC_RCON_ADDR", None), os.getenv("MC_RCON_PORT", None), os.getenv("MC_RCON_PW", None))
@@ -214,8 +215,11 @@ class RconDriver:
             print("RCON env vars not present or invalid, looking for config json...")
 
         #Load JSON file
+        if path is None:
+            path = Path(__file__).resolve().parent.parent / 'config' / 'rcon_config.json'
+
         try:
-            file = open(pathStr)
+            file = open(path)
             
         except:
             print("Failed to open RCON settings file")
