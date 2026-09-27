@@ -27,11 +27,15 @@ class RconConfig:
             print(f"Bad IP address for RCON given: {serverRconIP}")
             raise ValueError("Bad RCON IP")
 
-        if serverRconPort < 0 or serverRconPort 65535:
-            print(f"Bad port for RCON given: {serverRconPort}")
-            raise ValueError("Bad RCON port")
+        if type(serverRconPort) is not int:
+            print("Given RCON port is not an integer")
+            raise ValueError("Invalid RCON port")
 
-        if serverRconPW is not str:
+        if serverRconPort < 0 or serverRconPort > 65535:
+            print(f"Out of range port for RCON given: {serverRconPort}")
+            raise ValueError("Out of range RCON port")
+
+        if type(serverRconPW) is not str:
             print(f"Bad password for RCON given")
             raise ValueError("Bad RCON PW")
 
@@ -56,7 +60,7 @@ class RconDriver:
         self._config = copy.deepcopy(rconConfig)
 
 
-    def checkUpCmd():
+    def checkUpCmd(self):
         #Call version and see if we get a response
         try:
             output = subprocess.run([self._config.rconDep, 
@@ -72,7 +76,7 @@ class RconDriver:
         #If we got here, server is up
         return True
 
-    def listCmd():
+    def listCmd(self):
         #Call list
         output = None
         try:
@@ -110,7 +114,7 @@ class RconDriver:
 
         return playerList;
         
-    def whitelistAddCmd(playerName: str):  
+    def whitelistAddCmd(self, playerName: str):  
         if (len(playerName) < 3):
             #Name is too short
             raise ValueError("Name is too short")
@@ -174,15 +178,18 @@ class RconDriver:
         
         assert False, 'Whitelist add command reached impossible instruction, halting'
         
-    def seedCmd():
+    def seedCmd(self):
         return "2055796538" #TODO fetch from server instead of hardcoding
             
-    def ipCmd():
+    def ipCmd(self):
         #Get IP from akamai
         resp = None
         try:
             resp = requests.get("http://whatismyip.akamai.com")
             if (resp is None): raise ValueError("Got invalid response from Akamai")
+
+        except:
+            raise RuntimeError("Could not reach Akamai")
         
         #Validate response
         ipRaw = resp.text[:15]
@@ -198,7 +205,7 @@ class RconDriver:
         return match.group(0) # str containing IP
         
 
-    def _loadSettings(pathStr: str = '../../config/rcon_config.json'):
+    def _loadSettings(self, pathStr: str = '../../config/rcon_config.json'):
         #Attempt to retrieve from env vars
         try:
             settingsObj = RconConfig(os.getenv("MC_RCON_ADDR", None), os.getenv("MC_RCON_PORT", None), os.getenv("MC_RCON_PW", None))

@@ -1,0 +1,21 @@
+[project]
+name = "mc-server-rcon-api"
+version = "0.1.0"
+description = "API to provide safe and restricted RCON access to internal MC servers"
+authors = [
+    {name = "lopezk38",email = "lopezk38@gmail.com"}
+]
+license = {text = "GPLv3"}
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "requests",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+package-mode = false
