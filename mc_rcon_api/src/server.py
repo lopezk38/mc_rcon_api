@@ -22,6 +22,7 @@ app = FastAPI()
 
 corsAllowedOrigins = [
     'http://localhost:5173', # Allow CORS from dev server
+    'http://127.0.0.1:5173',
     # TODO add real domain while preparing for deployment
 ]
 
