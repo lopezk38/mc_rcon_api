@@ -11,9 +11,27 @@ import traceback
 import uvicorn
 
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 rconDriver = CachedRconDriver()
 app = FastAPI()
+
+############################################################
+# CORS Setup
+############################################################
+
+corsAllowedOrigins = [
+    'http://localhost:5173', # Allow CORS from dev server
+    # TODO add real domain while preparing for deployment
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins = corsAllowedOrigins,
+    allow_credentials = True,
+    allow_methods = ["*"],
+    allow_headers = ["*"],
+)
 
 
 """'''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''''
